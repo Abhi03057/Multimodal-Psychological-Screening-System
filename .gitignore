@@ -1,0 +1,41 @@
+# ======================
+# Python / Backend
+# ======================
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environments
+venv/
+env/
+
+# ======================
+# Dataset (IMPORTANT)
+# ======================
+Datasets/
+
+# ======================
+# Jupyter
+# ======================
+.ipynb_checkpoints/
+
+# ======================
+# Model files
+# ======================
+*.h5
+*.keras
+
+# (uncomment if model is small and you WANT to upload)
+# !backend/models/audio_model.keras
+
+# ======================
+# OS files
+# ======================
+.DS_Store
+Thumbs.db
+
+# ======================
+# Logs / temp
+# ======================
+*.log
+temp/
