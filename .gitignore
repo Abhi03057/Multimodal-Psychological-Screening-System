@@ -10,7 +10,7 @@ venv/
 env/
 
 # ======================
-# Dataset (IMPORTANT)
+# Dataset
 # ======================
 Datasets/
 
@@ -25,8 +25,13 @@ Datasets/
 *.h5
 *.keras
 
-# (uncomment if model is small and you WANT to upload)
-# !backend/models/audio_model.keras
+# 🔥 ADD THIS (IMPORTANT)
+backend/models/
+
+# ======================
+# Audio files
+# ======================
+*.wav
 
 # ======================
 # OS files
