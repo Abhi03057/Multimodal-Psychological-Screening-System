@@ -7,20 +7,25 @@ from tensorflow.keras.models import load_model
 # ══════════════════════════════════════════════════════
 #  LOAD MODEL ASSETS
 # ══════════════════════════════════════════════════════
-model = load_model("models/audio_model_best.keras")
+import os
 
-with open("models/label_encoder.pkl", "rb") as f:
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODEL_DIR = os.path.join(BASE_DIR, "models")
+
+model = load_model(os.path.join(MODEL_DIR, "audio_model_best.keras"))
+
+with open(os.path.join(MODEL_DIR, "label_encoder.pkl"), "rb") as f:
     le = pickle.load(f)
 
-with open("models/scaler.pkl", "rb") as f:
+with open(os.path.join(MODEL_DIR, "scaler.pkl"), "rb") as f:
     scaler = pickle.load(f)
 
 
 # ══════════════════════════════════════════════════════
 #  TEMPORAL SMOOTHING BUFFER
 # ══════════════════════════════════════════════════════
-SMOOTHING_WINDOW = 5   # rolling window size
-SWITCH_THRESHOLD = 3   # votes needed to change reported emotion
+SMOOTHING_WINDOW = 3   # Reduced to make testing snappier
+SWITCH_THRESHOLD = 1   # Reduced from 3 to 1 to show live emotion immediately
 
 prediction_buffer = deque(maxlen=SMOOTHING_WINDOW)
 confidence_buffer = deque(maxlen=SMOOTHING_WINDOW)
@@ -32,12 +37,12 @@ current_emotion   = "uncertain"
 # ══════════════════════════════════════════════════════
 
 # Silence gate
-RMS_SILENCE_THRESH = 0.01
-ZCR_NOISE_THRESH   = 0.08   # high ZCR + low RMS = background noise
+RMS_SILENCE_THRESH = 0.002  # Lowered from 0.01 to fix "no speech detected" for common laptop mics
+ZCR_NOISE_THRESH   = 0.15   # Raised from 0.08 to tolerate more background high-frequency sounds
 
 # After correction, confidence must exceed this to avoid "uncertain"
-# Kept LOW intentionally — let neutral through easily
-MIN_CONFIDENCE = 0.40
+# Lowered drastically for live microphone tests so you can see its best guesses!
+MIN_CONFIDENCE = 0.20
 
 # Skeptical emotions (model hallucinates these on normal speech)
 # Must clear BOTH bars to be trusted

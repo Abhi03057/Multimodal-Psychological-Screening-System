@@ -1,29 +1,49 @@
-from fastapi import APIRouter
-from services.scoring import analyze_data
+from fastapi import APIRouter, File, UploadFile, Form
+import shutil
+import os
+import uuid
+
+from services.audio_model import analyze_audio
 from services.llm_service import generate_report
 
-router = APIRouter(prefix="/analysis")  # 🔴 THIS WAS MISSING
+router = APIRouter(prefix="/analysis")
 
 @router.post("/")
-def analyze(data: dict):
-    phq9 = data.get("phq9_score", 0)
-    gad7 = data.get("gad7_score", 0)
+async def analyze(
+    phq9_score: int = Form(0),
+    gad7_score: int = Form(0),
+    audio_file: UploadFile = File(...)
+):
+    # Save the uploaded file temporarily
+    temp_filename = f"temp_{uuid.uuid4()}.wav"
+    with open(temp_filename, "wb") as buffer:
+        shutil.copyfileobj(audio_file.file, buffer)
+        
+    try:
+        # Run audio analysis
+        audio_result = analyze_audio(temp_filename)
+    finally:
+        # Clean up the temporary file
+        if os.path.exists(temp_filename):
+            os.remove(temp_filename)
 
-    analysis = analyze_data()
-
-    if phq9 > 14 or gad7 > 14:
+    if phq9_score > 14 or gad7_score > 14:
         risk = "high"
-    elif phq9 > 8:
+    elif phq9_score > 8:
         risk = "moderate"
     else:
         risk = "low"
 
     result = {
-        "phq9_score": phq9,
-        "gad7_score": gad7,
-        "audio_features": analysis.get("audio_features", {}),
-        "facial_emotion": analysis.get("facial_emotion", "unknown"),
-        "risk_level": risk
+        "phq9_score": phq9_score,
+        "gad7_score": gad7_score,
+        "audio_features": {
+            "energy": audio_result.get("speech_energy", "unknown"),
+            "pause_rate": audio_result.get("stability", "unknown")
+        },
+        "facial_emotion": "unknown", # Placeholder for future feature
+        "risk_level": risk,
+        "detected_emotion": audio_result.get("emotion")
     }
 
     result["report"] = generate_report(result)

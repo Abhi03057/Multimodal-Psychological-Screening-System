@@ -44,3 +44,6 @@ Thumbs.db
 # ======================
 *.log
 temp/
+
+.env
+node_modules/
